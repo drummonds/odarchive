@@ -10,7 +10,6 @@ import os
 from os import lstat
 import dill
 
-import click
 import pycdlib
 
 from .consts import *
@@ -150,7 +149,7 @@ class Archiver:
         self.file_db = FileDatabase(usb_path)
         self.job_name = job_name
         # Check to make sure not overwriting database
-        click.echo("Initializing file database")
+        print("Initializing file database")
         self.file_db.update(
             usb_path
         )  # Scan directory to add files

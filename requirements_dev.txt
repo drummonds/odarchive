@@ -1,0 +1,8 @@
+click==6.7
+dill
+fabric3==1.14.post1
+pycdlib==1.6.0
+#-e git://github.com/clalancette/pycdlib.git#egg=pycdlib
+black==18.5b0
+scandir
+twine  # For uploading to PyPi

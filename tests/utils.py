@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -27,3 +28,14 @@ def test_1_clean():
         except FileNotFoundError:
             pass
 
+
+def catalogue_compare(filename1, filename2):
+    with open(filename1) as json_data:
+        a = json.load(json_data)
+        a['guid'] = ''
+        a['date'] = ''
+    with open(filename2) as json_data:
+        b = json.load(json_data)
+        b['guid'] = ''
+        b['date'] = ''
+    return a == b,

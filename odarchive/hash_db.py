@@ -2,13 +2,11 @@
 This is a database of unique files which may exist in different locations.
 In addtiion the file entities can be segmented to fit onto multiple discs.
 """
-from collections import OrderedDict
-from enum import Enum
+import datetime as dt
 import json
-from mmap import mmap, ACCESS_READ
 from pathlib import Path, PurePosixPath
 from os import fsdecode, fsencode, getcwd, lstat, readlink, stat_result, getcwd
-from os.path import normpath
+import uuid
 
 try:
     from scandir import walk
@@ -39,10 +37,13 @@ class HashDatabase(AbstractFileDatabase):
     def save(self, catalogue_name=DB_FILENAME):
         """Save the current catalogue to file as a JSON file.
         It should be possible to reread this file later and recreate this record."""
+        self.guid = uuid.uuid4()
         filename = Path(getcwd()) / catalogue_name
         data = {
             # Todo If use original path then need to create dynamically the path to match
-            # "OriginalPath": str(self.path),
+            #"OriginalPath": str(self.path),
+            "date": str(dt.datetime.utcnow().isoformat()),
+            "guid": str(self.guid),
             "version": self.version,
             "files": json.loads(self.entries.to_json()),
             # List of directories are derived from file paths
@@ -126,7 +127,7 @@ class HashDatabase(AbstractFileDatabase):
         for entry in self.files():
             count_files += 1
             size_files += entry.size
-            if for_disc_num is None or entry.disc_num is None or for_disc_num == entry.disc_num:
+            if for_disc_num is None or for_disc_num == entry.disc_num:
                 count_files += 1
                 size_files += entry.size
                 if self.is_segmented:
@@ -136,20 +137,25 @@ class HashDatabase(AbstractFileDatabase):
                         disc_nums |= {entry.disc_num}
                 if entry.size > largest_file:
                     largest_file = entry.size
-            # Each entry may have multiple directory entries
-            for this_file in entry.filenames:
-                this_dir = PurePosixPath(this_file).parent
-                dirs = dirs | {this_dir}
-                length = len(Path(this_dir).parts) - 2
-                if length > max_dir_length:
-                    longest_dir = this_dir.parent
-                    max_dir_length = length
+                # Each entry may have multiple directory entries
+                for this_file in entry.filenames:
+                    this_dir = PurePosixPath(this_file).parent
+                    dirs = dirs | {this_dir}
+                    length = len(Path(this_dir).parts) - 2
+                    if length > max_dir_length:
+                        longest_dir = this_dir.parent
+                        max_dir_length = length
         # Format answer
         result = super().get_info()
         result += f"Data size       = {size_files:,} bytes\n"
         result += f"Is segmented    = {self.is_segmented}\n"
-        if for_disc_num is not None:
-             result += f'/n>>>>>>>>> Disc {for_disc_num} <<<<<<<<<<<<<<<<\n'
+        if for_disc_num is None:
+             result += f'>>>>>>>>> For all files in all discs <<<<<<<<<<<<<<<<\n'
+        else:
+            if self.is_segmented:  # Add information about disc size
+                result += f'>>>>>>>>> Disc {for_disc_num} <<<<<<<<<<<<<<<<\n'
+            else:
+                result += f'>>>>>>>>> Error asking for disc {for_disc_num} but disc not segmented  <<<<<<<<<<<<<<<<\n'
         if self.is_segmented:  # Add information about disc size
             if isinstance(self.str_segment_size, str):  # Then can interpret text
                 result += (

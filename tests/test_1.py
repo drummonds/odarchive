@@ -2,6 +2,7 @@
 A series of tests that test at the CLI level
 """
 import filecmp
+import json
 import os
 from pathlib import Path
 import sys
@@ -10,7 +11,7 @@ import unittest
 from fabric.api import local, lcd
 
 try:
-    from utils import test_1_clean
+    from utils import test_1_clean, catalogue_compare
 except ImportError:
     print(f"Import fail CWD = {os.getcwd()}")
 
@@ -34,15 +35,15 @@ class Test_Simple(unittest.TestCase):
             "Failed to remove the file test_1_files/catalogue.json.",
         )
         local(
-            "C:/Users/HumphreyDrummond/Envs/odarchive/Scripts/python ../../odarchive_cli.py archive usb"
+            "C:/Users/HumphreyDrummond/Envs/odarchive/Scripts/python ../../odarchive_cli.py archive usb "
         )
         self.assertTrue(
             os.path.isfile("catalogue.json"),
             "Failed to create the file test_1_files/catalogue.json",
         )
         self.assertTrue(
-            filecmp.cmp("catalogue.json", "reference_catalogue.json", shallow=False),
-            "Created database does not match reference.",
+            catalogue_compare('catalogue.json', 'reference_catalogue.json'),
+            "Created catalogue.json does not match reference_catalogue.json.",
         )
 
     def test_create_iso_via_fab2(self):
@@ -62,6 +63,6 @@ class Test_Simple(unittest.TestCase):
             "Failed to create the file test_1_files/catalogue.json",
         )
         self.assertTrue(
-            filecmp.cmp("catalogue.json", "reference_catalogue.json", shallow=False),
+            catalogue_compare("catalogue.json", "reference_catalogue.json"),
             "Created database does not match reference.",
         )

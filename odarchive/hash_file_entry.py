@@ -213,7 +213,7 @@ class HashFileEntry:
             if i:
                 filename_list += ", "
             filename_list += f'"{filename}" : null'
-        if self.disc_num:
+        if self.disc_num is not None:  # 0 is a valid disc_num
             disc_num = f'    "disc_num" : {self.disc_num},\n'
         else:
             disc_num = ""

@@ -1,4 +1,5 @@
 {
+    "date": "2018-10-17T14:43:19.454746",
     "files": {
         "0d3c937eee199c1d6b5af02f87ee9776ffb8538913bc28bdc44f294e8b405f02795e2cfdc6e52121cb6cb1a07c58883898bb820c01c510e005fa2be1481866a4": {
             "filenames": {
@@ -24,5 +25,6 @@
             "size": 22
         }
     },
+    "guid": "358ef4f2-5ceb-4536-a136-812a9717f4da",
     "version": 1
 }

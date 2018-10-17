@@ -42,6 +42,7 @@ class TestFileDB(unittest.TestCase):
             f"""Number of entries = 3
 Data size       = 158 bytes
 Is segmented    = False
+>>>>>>>>> For all files in all discs <<<<<<<<<<<<<<<<
 Number of files = 6
   Largest file  = 33
 Number of dirs  = 2
@@ -52,6 +53,7 @@ Max dir depth   = 1 (on source file system)
             f"""Number of entries = 3
 Data size       = 158 bytes
 Is segmented    = True
+>>>>>>>>> For all files in all discs <<<<<<<<<<<<<<<<
   Disc segment size = cd, 737,280,000 bytes
   Catalogue size = 0 bytes
   Number of discs = 1

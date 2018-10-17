@@ -12,9 +12,11 @@ import unittest
 from fabric.api import local, lcd
 from pycdlib.pycdlibexception import PyCdlibInvalidInput
 from odarchive import Archiver, odarchiveError
-from odarchive.hash_file_entry import iso9660_dir, HashFileEntries
 
-from utils import test_1_clean
+try:
+    from utils import test_1_clean, catalogue_compare
+except ImportError:
+    print(f"Import fail CWD = {os.getcwd()}")
 
 
 class Test_Direct(unittest.TestCase):
@@ -58,7 +60,7 @@ class Test_Direct(unittest.TestCase):
             "Failed to create the file test_1_files/catalogue.json",
         )
         self.assertTrue(
-            filecmp.cmp("catalogue.json", "reference_catalogue.json", shallow=False),
+            catalogue_compare("catalogue.json", "reference_catalogue.json"),
             "Created file catalogue does not match reference.",
         )
 
@@ -67,6 +69,7 @@ class Test_Direct(unittest.TestCase):
             """Number of entries = 3
 Data size       = 158 bytes
 Is segmented    = False
+>>>>>>>>> For all files in all discs <<<<<<<<<<<<<<<<
 Number of files = 6
   Largest file  = 33
 Number of dirs  = 2
@@ -77,6 +80,7 @@ Max dir depth   = 1 (on source file system)
             """Number of entries = 3
 Data size       = 158 bytes
 Is segmented    = True
+>>>>>>>>> For all files in all discs <<<<<<<<<<<<<<<<
   Disc segment size = cd, 737,280,000 bytes
   Catalogue size = 2,048 bytes
   Number of discs = 1

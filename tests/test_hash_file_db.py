@@ -47,7 +47,8 @@ Number of files = 6
   Largest file  = 33
 Number of dirs  = 2
 Max dir depth   = 1 (on source file system)
- Dir =: /DATA"""
+ Dir =: /DATA
+Database Version = 1"""
         )
         GET_INFO_AFTER_SEGMENTATION = (
             f"""Number of entries = 3
@@ -61,7 +62,8 @@ Number of files = 6
   Largest file  = 33
 Number of dirs  = 2
 Max dir depth   = 1 (on source file system)
- Dir =: /DATA"""
+ Dir =: /DATA
+Database Version = 1"""
         )
         hash_db = HashDatabase(self.file_db, self.iso_path_root)
         self.assertFalse(hash_db.is_segmented, "File database should not be segmented")

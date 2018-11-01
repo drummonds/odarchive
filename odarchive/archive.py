@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 import datetime as dt
+import dateutil.parser
 
 try:
     from cStringIO import StringIO as BytesIO
@@ -123,12 +124,47 @@ def list_dirs(files):
     print()
 
 
-def load_archiver_from_json(filename="archiver.dill"):
+def load_archiver_from_dill(filename="archiver.dill"):
     with open(filename, "rb") as f:
         # The protocol version used is detected automatically, so we do not
         # have to specify it.
         archiver = dill.load(f)
     return archiver
+
+
+def load_archiver_from_json(filename):
+    ar = Archiver()
+    with open(filename) as json_data:
+        d = json.load(json_data)
+        print(d)
+        print(f'guid = {d["guid"]}')
+        print(f'version = {d["version"]}')
+        # Create empty hash database, default is to use a file_db
+        ar.hash_db = HashDatabase(None, ar.iso_path_root)
+        ar.hash_db.entries = HashFileEntries.create_from_json(ar.iso_path_root, d['files'], ar.hash_db)
+        """Save the current catalogue to file as a JSON file.
+        It should be possible to reread this file later and recreate this record."""
+        ar.hash_db.guid = uuid.UUID(d["guid"])
+        if int(d['version']) != ar.hash_db.version:
+            raise odarchiveError(f"Version of Catalogue ({d['version']} " +
+                                 " does not match that of software ({ar.version})." +
+                                 "Upgrading version not currently possible. Contact supplier")
+        try:
+            date_str = d['date']
+            ar.archive_date = dateutil.parser.parse(date_str) # This a read only value after an archive has been
+            # created
+        except:
+            raise odarchiveError('Date string malformed or not found in catalogue.json')
+        try:
+            ar.hash_db.str_segment_size = d['segment_size_str']
+        except:
+            ar.hash_db.str_segment_size = 'bd'
+        try:
+            ar.hash_db.int_segment_size = d['segment_size_int']
+        except:
+            ar.hash_db.int_segment_size = 25000000000
+    ar.hash_db.catalogue_size = os.path.getsize(filename)
+    return ar
 
 
 class Archiver:
@@ -310,9 +346,10 @@ archive series."""
     def get_info(self):
         """Returns summary information on archive"""
         try:
-            return self.hash_db.get_info()
+            result = self.hash_db.get_info()
         except:
-            return self.file_db.get_info()
+            result = self.file_db.get_info()
+        return result
 
     def print_files(self):
         self.file_db.print_files()
@@ -321,10 +358,16 @@ archive series."""
     def last_disc_num(self):
         return self.hash_db.last_disc_number
 
+    @property
+    def guid(self):
+        try:
+            return self.hash_db.guid
+        except AttributeError:
+            return None
+
     def get_disc_info(self, disc_num):
         """Returns summary information on a single disc"""
         return self.hash_db.get_info(disc_num)
-
 
     def get_all_disc_info(self):
         """Returns summary information on all discs"""

@@ -28,16 +28,21 @@ class HashDatabase(AbstractFileDatabase):
     def __init__(self, file_db: FileDatabase, iso_path_root):
         self.iso_path_root = iso_path_root
         self.db_path = Path(DB_FILENAME)
-        self.entries = HashFileEntries.create(self.iso_path_root, file_db.path)
         self.version = DATABASE_VERSION
         self.segment_size = None  # DB is started not segmented
         self.last_disc_number = None  # This starts as a non segmented archive
-        self.update(file_db)
+        # segmented or not is None or not
+        try:
+            self.entries = HashFileEntries.create(self.iso_path_root, file_db.path)
+            self.update(file_db)
+        except AttributeError:
+            self.entries = HashFileEntries.create(self.iso_path_root, None)
 
     def save(self, catalogue_name=DB_FILENAME):
         """Save the current catalogue to file as a JSON file.
-        It should be possible to reread this file later and recreate this record."""
-        self.guid = uuid.uuid4()
+        It should be possible to reread this file later and recreate this record and a complete archive."""
+        self.guid = uuid.uuid4()  # a second save will have a different guid as the structure is mutable and this
+        # ensures that each saved file is uniquely identifiable.
         filename = Path(getcwd()) / catalogue_name
         data = {
             # Todo If use original path then need to create dynamically the path to match
@@ -174,4 +179,9 @@ class HashDatabase(AbstractFileDatabase):
         result += f"Number of dirs  = {len(dirs)}\n"
         result += f"Max dir depth   = {max_dir_length} (on source file system)\n"
         result += f" Dir =: {longest_dir}\n"
+        if hasattr(self,'guid'):
+            result += (
+                f"guid = {self.guid}\n"
+            )
+        result += f"Database Version = {self.version}\n"
         return result

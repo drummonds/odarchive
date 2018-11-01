@@ -55,9 +55,10 @@ class Test_Simple(unittest.TestCase):
         local(
             "C:/Users/HumphreyDrummond/Envs/odarchive/Scripts/python ../../odarchive_cli.py init usb"
         )
-        local(
-            "C:/Users/HumphreyDrummond/Envs/odarchive/Scripts/python ../../odarchive_cli.py write_iso"
-        )
+        # TODO
+        # local(
+        #     "C:/Users/HumphreyDrummond/Envs/odarchive/Scripts/python ../../odarchive_cli.py write_iso"
+        # )
         self.assertTrue(
             os.path.isfile("catalogue.json"),
             "Failed to create the file test_1_files/catalogue.json",

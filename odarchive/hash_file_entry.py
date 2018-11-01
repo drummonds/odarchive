@@ -19,7 +19,7 @@ from .tools import mangle_file_for_iso9660, mangle_dir_for_iso9660
 
 class HashFileEntries(OrderedDict):
     """This is a collection of HashFileEntries
-    In fact you can only create a new HashFileEntry with reference to a collecition
+    In fact you can only create a new HashFileEntry with reference to a collection
     """
     @classmethod
     def create(cls, iso_path_root, path):
@@ -27,6 +27,39 @@ class HashFileEntries(OrderedDict):
         result = cls()
         result.iso_path_root = iso_path_root
         result.path = path
+        return result
+
+    @classmethod
+    def create_from_json(cls, iso_path_root, files_in_db, parent):
+        """ Reading in entries from json"""
+        result = cls()
+        result.iso_path_root = iso_path_root
+        result.path = ''  # TODO Preserve path
+        print(files_in_db)
+        for hash, entry in files_in_db.items():
+            # Sort out is_sgemented and last_disc_number in parent object
+            try:
+                disc_num = int(entry['disc_num'])
+                if parent.last_disc_number is None:
+                    parent.last_disc_number = disc_num
+                else:
+                    if disc_num > parent.last_disc_number:
+                        parent.last_disc_number = disc_num
+            except KeyError:
+                disc_num = None
+            filenames = []
+            for filename in entry['filenames']:
+                filenames.append(filename)
+            result[hash] = HashFileEntry(
+                result,
+                hash,
+                filenames,
+                entry['size'],
+                entry['mtime'],
+                0,#         catalogue_num=catalogue_num,
+                disc_num #         disc_num=this_entry.disc_num,
+            )
+            #Add extra filenames
         return result
 
     def entry_to_path(self, this_entry):
@@ -124,7 +157,8 @@ class HashFileEntry:
     """This represents a single duplicated file.  In can either be in this catalogue or
     in another catalogue.  You cannot create an entry without know the hash of the file.
 
-    The filenames of each entry and duplicate are stored in a filenames dictionary
+    The filenames of each entry and duplicate are stored in a filenames dictionary.
+    filename can either be a single element or a list of filenames
     """
 
     def __init__(
@@ -139,9 +173,14 @@ class HashFileEntry:
     ):
         # In memory, "filename" should be a relative UDF Path
         self.parent = parent  # eg a HashFileEntries
-        self.filenames = {
-            str(filename): {}
-        }  # a UDF absolute path which is stored on a blank catalogue
+        if type(filename) is list:
+            self.filenames = {}
+            for this_file in filename:
+                self.filenames[this_file] = {}
+        else:
+            self.filenames = {
+                str(filename): {}
+            }  # a UDF absolute path which is stored on a blank catalogue
         self.size = size
         self.mtime = mtime
         self.file_hash = file_hash

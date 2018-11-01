@@ -88,7 +88,8 @@ Number of files = 6
   Largest file  = 33
 Number of dirs  = 2
 Max dir depth   = 1 (on source file system)
- Dir =: /DATA"""
+ Dir =: /DATA
+Database Version = 1"""
         )
         ar = Archiver()
         ar.create_file_database(Path("usb"))
@@ -102,8 +103,10 @@ Max dir depth   = 1 (on source file system)
             "new_0000.iso should not be written as archive has not been segmented.",
         )
         self.assertFalse(ar.is_segmented, "Archive should not be segmented")
+        test_result = GET_INFO_BEFORE_SEGMENTATION + f'\nguid = {ar.guid}'
+        test_result = test_result + f'\nDatabase Version = 1'
         self.assertEqual(
-            GET_INFO_BEFORE_SEGMENTATION,
+            test_result,
             ar.get_info().strip(),
             "Testing get info before segmentation",
         )
@@ -158,3 +161,11 @@ Max dir depth   = 1 (on source file system)
         for i in range(3):
             ar.write_iso(disc_num=i)
 
+
+    def test_guid(self):
+        ar = Archiver()
+        self.assertIsNone(ar.guid, "At creation guid should be none")
+        ar.create_file_database(Path("usb"))
+        ar.convert_to_hash_database()
+        ar.hash_db.save()  #  Creates catalogue.json
+        self.assertIsNotNone(ar.guid, "After sving guid should exist")

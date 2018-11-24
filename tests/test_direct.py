@@ -11,7 +11,7 @@ import unittest
 
 from fabric.api import local, lcd
 from pycdlib.pycdlibexception import PyCdlibInvalidInput
-from odarchive import Archiver, odarchiveError
+from odarchive import Archiver, odarchiveError, DB_FILENAME
 
 try:
     from utils import test_1_clean, catalogue_compare
@@ -35,7 +35,7 @@ class Test_Direct(unittest.TestCase):
 
     def test_create_iso_direct(self):
         self.assertFalse(
-            os.path.isfile("catalogue.json"),
+            os.path.isfile(DB_FILENAME),
             "Failed to remove the file test_1_files/catalogue.json.",
         )
         self.assertFalse(os.path.isfile("new.iso"), "Failed to remove new.iso.")
@@ -56,11 +56,11 @@ class Test_Direct(unittest.TestCase):
         )
         ar.save()
         self.assertTrue(
-            os.path.isfile("catalogue.json"),
+            os.path.isfile(DB_FILENAME),
             "Failed to create the file test_1_files/catalogue.json",
         )
         self.assertTrue(
-            catalogue_compare("catalogue.json", "reference_catalogue.json"),
+            catalogue_compare(DB_FILENAME, "reference_catalogue.json"),
             "Created file catalogue does not match reference.",
         )
 

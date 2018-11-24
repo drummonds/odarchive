@@ -10,13 +10,8 @@ from odarchive.hash_file_entry import HashFileEntries, iso9660_dir
 from odarchive.consts import odarchiveError
 
 def test_hash_file_entry_clean():
-    """Delete files produced in test_1"""
-    home = Path(os.getcwd())
-    if home.parts[-1] == "tests":
-        test_1_root = home / Path("test_1_files")
-    else:
-        test_1_root = home / Path("tests/test_1_files")
-    print(f" test_hash_file_entry_clean CWD = {os.getcwd()}")
+    """Delete files produced in test_1_files"""
+    test_1_root = Path(__file__).parents[0] / 'test_1_files'
     for this_file in (
         "test_pickling.dill",
     ):
@@ -26,15 +21,13 @@ def test_hash_file_entry_clean():
             pass
 
 
-
 class TestHashFileEntry(unittest.TestCase):
 
     def setUp(self):
         """Delete files on setup so that can review at end"""
-        test_hash_file_entry_clean()
         self.start_dir = os.getcwd()
-        if Path(self.start_dir).parts[-1] != "tests":
-            os.chdir("tests")
+        os.chdir(Path(__file__).parents[0])
+        test_hash_file_entry_clean()
         # Required for HashEntry as parent
         self.path = Path(os.getcwd()) / Path("test_1_files/usb")
         self.iso_path_root = PurePosixPath(

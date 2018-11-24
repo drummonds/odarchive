@@ -2,15 +2,8 @@ import json
 import os
 from pathlib import Path
 
-
 def test_1_clean():
-    """Delete files produced in test_1"""
-    home = Path(os.getcwd())
-    if home.parts[-1] == "tests":
-        test_1_root = home / Path("test_1_files")
-    else:
-        test_1_root = home / Path("tests/test_1_files")
-    print(f" test1_clean CWD = {os.getcwd()}")
+    """Delete files produced in test_1, assume in directory ./test_1_files"""
     for this_file in (
         "usb.iso",
         "usb.db",
@@ -24,7 +17,7 @@ def test_1_clean():
         "archiver.json",
     ):
         try:
-            os.remove(test_1_root / Path(this_file))
+            os.remove(Path(this_file))
         except FileNotFoundError:
             pass
 
@@ -39,3 +32,4 @@ def catalogue_compare(filename1, filename2):
         b['guid'] = ''
         b['date'] = ''
     return a == b,
+

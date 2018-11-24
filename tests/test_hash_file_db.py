@@ -20,10 +20,7 @@ class TestFileDB(unittest.TestCase):
     def setUp(self):
         """Set the correct working directory"""
         self.start_dir = os.getcwd()
-        if Path(self.start_dir).parts[-1] == "tests":
-            os.chdir("test_1_files")
-        else:  # Assume in parent directory
-            os.chdir("tests/test_1_files")
+        os.chdir(Path(__file__).parents[0] / "test_1_files")
         self.file_db = FileDatabase(Path("usb"))
         self.file_db.update()
         self.file_db.calculate_file_hash()
@@ -48,7 +45,7 @@ Number of files = 6
 Number of dirs  = 2
 Max dir depth   = 1 (on source file system)
  Dir =: /DATA
-Database Version = 1"""
+Database Version = 2"""
         )
         GET_INFO_AFTER_SEGMENTATION = (
             f"""Number of entries = 3
@@ -63,7 +60,7 @@ Number of files = 6
 Number of dirs  = 2
 Max dir depth   = 1 (on source file system)
  Dir =: /DATA
-Database Version = 1"""
+Database Version = 2"""
         )
         hash_db = HashDatabase(self.file_db, self.iso_path_root)
         self.assertFalse(hash_db.is_segmented, "File database should not be segmented")

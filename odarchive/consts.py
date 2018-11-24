@@ -3,8 +3,9 @@ import re
 
 # 1: 'version' field added
 # 2: entry 'file_type' field added; symlinks now treated correctly
-DATABASE_VERSION = 1
+DATABASE_VERSION = 2
 DB_FILENAME = "catalogue.json"
+DISC_INFO_FILENAME = "disc_info.json"
 
 HASH_FUNCTION = hashlib.sha512
 # Mostly used for importing from saved hash files

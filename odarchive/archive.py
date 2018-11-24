@@ -14,6 +14,7 @@ import dill
 import pycdlib
 
 from .consts import *
+from .disc_info import DiscInfo
 from .file_db import FileDatabase
 from .hash_db import *
 from .hash_file_entry import iso9660_dir, HashFileEntry
@@ -132,14 +133,22 @@ def load_archiver_from_dill(filename="archiver.dill"):
     return archiver
 
 
-def load_archiver_from_json(filename):
+def load_archiver_from_json(filename=None, json_data=None):
+    """Load an archive from a catalogue.jsno file eg from an written CD.
+    If filename is none, can load the json directly.  Note the filename takes precedence over json_data"""
     ar = Archiver()
-    with open(filename) as json_data:
-        d = json.load(json_data)
-        print(d)
-        print(f'guid = {d["guid"]}')
-        print(f'version = {d["version"]}')
-        # Create empty hash database, default is to use a file_db
+    def parse_json(json_data):
+        d = json_data
+        for attribute in ('client_name', 'job_name', 'iso_path_root', 'source_path', 'version'):
+            try:
+                setattr(ar, attribute, d[attribute])
+            except KeyError:
+                pass
+        try:
+            ar.client_name = uuid.UUID(d["job_id"])
+        except KeyError:
+            pass  # Ignore missing client names.  Missisn from frist version
+        # fill the has_db from the d['files'] entry.
         ar.hash_db = HashDatabase(None, ar.iso_path_root)
         ar.hash_db.entries = HashFileEntries.create_from_json(ar.iso_path_root, d['files'], ar.hash_db)
         """Save the current catalogue to file as a JSON file.
@@ -163,7 +172,13 @@ def load_archiver_from_json(filename):
             ar.hash_db.int_segment_size = d['segment_size_int']
         except:
             ar.hash_db.int_segment_size = 25000000000
-    ar.hash_db.catalogue_size = os.path.getsize(filename)
+    if filename:
+        with open(filename) as json_data_from_file:
+            parse_json(json.load(json_data_from_file))
+        ar.hash_db.catalogue_size = os.path.getsize(filename)
+    else:
+        parse_json(json.loads(json_data))
+        ar.hash_db.catalogue_size = len(json_data)
     return ar
 
 
@@ -173,17 +188,55 @@ class Archiver:
     can do them one by one.  For a 10TB archiving to 25GB drives this is a big saving."""
 
     def __init__(self):
+        # This is some default data which should be overwritten.
         self.iso_path_root = PurePosixPath("/DATA")
+        self.client_name = 'Unknown client'
+        self.job_name = 'Unamed job'
+        self.job_id = uuid.uuid4()  # The job_id should only be changed when reading a job from an old catalogue.
+        self.version = DATABASE_VERSION
 
-    def save(self, filename="archiver.dill"):
+
+    def save_as_dill(self, filename="archiver.dill"):
+        """Saving using dill is really a lazy way of saving the archive (which works).  It should be replaced
+        by saving as a json file.  'catalogue.json'  This should be transportable over time.  The reason is that
+        you want to be able to work with the archive when you read it back in.  This could be part of a restore
+        or verification process."""
         with open(filename, "wb") as f:
             # Pickle the 'data' dictionary using the highest protocol available.
             dill.dump(self, f, dill.HIGHEST_PROTOCOL)
 
-    def create_file_database(self, usb_path, job_name="new"):
+    def save(self, catalogue_name=DB_FILENAME):
+        """Save the current catalogue to file as a JSON file.
+        It should be possible to reread this file later and recreate this record and a complete archive."""
+        if not hasattr(self, "hash_db"):
+            raise odarchiveError('Trying to save an archive which has not yet calculated the hashes for all the files.')
+        self.guid = uuid.uuid4()  # a second save will have a different guid as the structure is mutable and this
+        # ensures that each saved file is uniquely identifiable.
+        filename = Path(getcwd()) / catalogue_name
+        data = {
+            "client_name": self.client_name,  # date of saving the file
+            "date": str(dt.datetime.utcnow().isoformat()),  # date of saving the file
+            "guid": str(self.guid),
+            "job_name" : self.job_name,
+            "job_id" : str(self.job_id),
+            "iso_path_root" : str(self.iso_path_root),
+            "segment_size" : self.hash_db.segment_size,
+            "source_path" : str(self.source_path), # Where did the data come from
+            "version": self.version,
+            "files": json.loads(self.hash_db.entries.to_json()),
+            # List of directories are derived from file paths
+        }
+        with filename.open("w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, sort_keys=True, indent=4)
+
+    def create_file_database(self, usb_path, job_name=None, client_name = None):
         # Create database
         self.file_db = FileDatabase(usb_path)
-        self.job_name = job_name
+        if job_name:
+            self.job_name = job_name
+        if client_name:
+            self.client_name = client_name
+        self.source_path = usb_path
         # Check to make sure not overwriting database
         print("Initializing file database")
         self.file_db.update(
@@ -200,7 +253,7 @@ class Archiver:
             raise odarchiveError('Archive locked so cannot calculate hashes')
 
     def create_catalogue(self, verbose=False):
-        """Creates a catalogue file catalogue.json on disk."""
+        """Creates a catalogue file catalogue.json on disc."""
         self.hash_db.save()  # Creates catalogue.json
         self.save()
 
@@ -247,30 +300,33 @@ class Archiver:
 This archive was created {dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')}
 
 The data for this archive is stored in the directory /DATA.
-There is a catalogue of this archive stored in catalouge.json.  This catalogue has a list of all the files
-archived in this run and on which disc they are stored.  The same catalogue is written to each disc in the 
-archive series."""
+There is a catalogue of this archive stored in catalogue.json.  
+This catalogue has a list of all the files archived in this run 
+and on which disc they are stored.  
+The same catalogue is written to each disc in the archive series."""
         readme_bytes = readme.encode("utf-8")
         iso.add_fp(
             BytesIO(readme_bytes),
             len(readme_bytes),
             "/README.MKD;1",
-            udf_path="/README.MKD",
+            udf_path="/readme.mkd",
         )
         iso.add_file(
-            str("catalogue.json"),
-            "/CATALOGUE.JSON;1",
-            udf_path="/catalogue.json"  # Same catalogue for each disc
+            str(DB_FILENAME),
+            f"/{DB_FILENAME.upper()};1",
+            udf_path=f"/{DB_FILENAME}"  # Same catalogue for each disc
             # So that you can go to single disc and then find where to go next - which disc to read rather than
             # having to read all the files.
         )
-        # Todo add_file which says which disc this is in which catalogue
-
-        # iso.add_directory(str(self.iso_path_root), udf_path=str(self.iso_path_root))
-        # iso.add_directory(
-        #     str(self.iso_path_root) + "/TESTDIR",
-        #     udf_path=str(self.iso_path_root) + "/testDir",
-        # )
+        di = DiscInfo()
+        di.setup(disc_num, set_size)
+        disk_info_bytes = di.get_json().encode("utf-8")
+        iso.add_fp(
+            BytesIO(disk_info_bytes),
+            len(disk_info_bytes),
+            f"/{DISC_INFO_FILENAME.upper()};1",
+            udf_path=f"/{DISC_INFO_FILENAME}",
+        )
         dir_count = 0
         for this_dir in self.hash_db.entries.dir_entries(disc_num=disc_num):
             # Todo add Bridge format and iso9660
@@ -330,7 +386,7 @@ archive series."""
         """Segment an archive.  This is mainly"""
         if not self.is_locked:
             catalogue_size = (
-                (2048 + lstat(str(str("catalogue.json"))).st_size) // 2048
+                (2048 + lstat(str(str(DB_FILENAME))).st_size) // 2048
             ) * 2048  # Account for sector size
             self.hash_db.segment(size, catalogue_size)
         else:
@@ -358,13 +414,6 @@ archive series."""
     def last_disc_num(self):
         return self.hash_db.last_disc_number
 
-    @property
-    def guid(self):
-        try:
-            return self.hash_db.guid
-        except AttributeError:
-            return None
-
     def get_disc_info(self, disc_num):
         """Returns summary information on a single disc"""
         return self.hash_db.get_info(disc_num)
@@ -375,3 +424,5 @@ archive series."""
         for i in range(self.last_disc_num):
             result += self.get_disc_info(i)
         return result
+
+

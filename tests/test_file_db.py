@@ -19,10 +19,7 @@ class TestFileDB(unittest.TestCase):
     def setUp(self):
         """Set the correct working directory"""
         self.start_dir = os.getcwd()
-        if Path(self.start_dir).parts[-1] == "tests":
-            os.chdir("test_1_files")
-        else:  # Assume in parent directory
-            os.chdir("tests/test_1_files")
+        os.chdir(Path(__file__).parents[0] / "test_1_files")
 
     def tearDown(self):
         os.chdir(self.start_dir)

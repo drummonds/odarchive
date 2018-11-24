@@ -10,6 +10,8 @@ import unittest
 
 from fabric.api import local, lcd
 
+
+from odarchive import DB_FILENAME
 try:
     from utils import test_1_clean, catalogue_compare
 except ImportError:
@@ -31,25 +33,26 @@ class Test_Simple(unittest.TestCase):
 
     def test_create_iso_via_fab(self):
         self.assertFalse(
-            os.path.isfile("catalogue.json"),
-            "Failed to remove the file test_1_files/catalogue.json.",
+            os.path.isfile(DB_FILENAME),
+            f"Failed to remove the file test_1_files/{DB_FILENAME}.",
         )
+        # TODO Get rid of user specific reference  EVERYWHERE
         local(
             "C:/Users/HumphreyDrummond/Envs/odarchive/Scripts/python ../../odarchive_cli.py archive usb "
         )
         self.assertTrue(
-            os.path.isfile("catalogue.json"),
-            "Failed to create the file test_1_files/catalogue.json",
+            os.path.isfile(DB_FILENAME),
+            f"Failed to create the file test_1_files/{DB_FILENAME}",
         )
         self.assertTrue(
-            catalogue_compare('catalogue.json', 'reference_catalogue.json'),
+            catalogue_compare(DB_FILENAME, 'reference_catalogue.json'),
             "Created catalogue.json does not match reference_catalogue.json.",
         )
 
     def test_create_iso_via_fab2(self):
         self.assertFalse(
-            os.path.isfile("catalogue.json"),
-            "Failed to remove the file test_1_files/catalogue.json.",
+            os.path.isfile(DB_FILENAME),
+            f"Failed to remove the file test_1_files/{DB_FILENAME}.",
         )
         # init and write_iso should be same as archive
         local(
@@ -60,10 +63,10 @@ class Test_Simple(unittest.TestCase):
         #     "C:/Users/HumphreyDrummond/Envs/odarchive/Scripts/python ../../odarchive_cli.py write_iso"
         # )
         self.assertTrue(
-            os.path.isfile("catalogue.json"),
-            "Failed to create the file test_1_files/catalogue.json",
+            os.path.isfile(DB_FILENAME),
+            f"Failed to create the file test_1_files/{DB_FILENAME}",
         )
         self.assertTrue(
-            catalogue_compare("catalogue.json", "reference_catalogue.json"),
+            catalogue_compare(DB_FILENAME, "reference_catalogue.json"),
             "Created database does not match reference.",
         )

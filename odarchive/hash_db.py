@@ -38,7 +38,8 @@ class HashDatabase(AbstractFileDatabase):
         except AttributeError:
             self.entries = HashFileEntries.create(self.iso_path_root, None)
 
-    def save(self, catalogue_name=DB_FILENAME):
+
+    def save_disc_info(self, catalogue_name=DISC_INFO_FILENAME):
         """Save the current catalogue to file as a JSON file.
         It should be possible to reread this file later and recreate this record and a complete archive."""
         self.guid = uuid.uuid4()  # a second save will have a different guid as the structure is mutable and this
@@ -49,6 +50,8 @@ class HashDatabase(AbstractFileDatabase):
             #"OriginalPath": str(self.path),
             "date": str(dt.datetime.utcnow().isoformat()),
             "guid": str(self.guid),
+            "segment_size_str" : self.str_segment_size,
+            "segment_size_int" : self.int_segment_size,
             "version": self.version,
             "files": json.loads(self.entries.to_json()),
             # List of directories are derived from file paths

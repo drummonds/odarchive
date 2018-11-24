@@ -107,7 +107,7 @@ class FileDatabase(AbstractFileDatabase):
     def verify(self, verbose_failures=False):
         """
         Calls each FileEntry's verify method to make sure that
-        nothing has changed on disk.
+        nothing has changed on disc.
 
         Returns a 2-tuple of sets of filenames:
         [0] modified files

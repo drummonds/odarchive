@@ -47,7 +47,7 @@ def archive(pretend, usb_path):
     ar = Archiver()
     ar.create_file_database(Path(usb_path))
     ar.convert_to_hash_database()
-    ar.hash_db.save()  # Creates catalogue.json
+    ar.save()  # Creates catalogue.json
     ar.print_files()
     ar.write_iso(pretend)
     ar.save()

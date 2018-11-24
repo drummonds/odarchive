@@ -4,10 +4,10 @@ from setuptools import setup, find_packages
 # Get version variables
 exec(open('odarchive/_version.py').read())
 
-with open('README.rst') as readme_file:
+with open('README.mkd') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
+with open('HISTORY.mkd') as history_file:
     history = history_file.read()
 
 setup(
@@ -15,12 +15,15 @@ setup(
     version = __version__,
     description = 'Convert file systems to archiveable ISO files',
     long_description=readme + '\n\n' + history,
+    long_description_content_type='text/markdown',  # This is important!
     author=__author__,
     author_email=__email__,
     url='https://github.com/drummonds/odarchive',
     packages=find_packages(include=['odarchive']),
     include_package_data=True,
-    #install_requires=requirements,
+    install_requires=[
+        'python-dateutil'
+    ],
     license="MIT license",
     zip_safe=False,
     keywords = ['cdrom', 'dvd', 'bdrom', 'archive', 'odarchive'],

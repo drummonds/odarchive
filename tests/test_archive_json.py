@@ -33,7 +33,7 @@ get_info = Template("""Number of entries = 3
 Data size       = 158 bytes
 Is segmented    = True
 >>>>>>>>> For all files in all discs <<<<<<<<<<<<<<<<
-  Disc segment size = cd, 737,280,000 bytes
+  Disc segment size = bd, 25,000,000,000 bytes
   Catalogue size = {{ size }} bytes
   Number of discs = 1
 Number of files = 6
@@ -41,8 +41,8 @@ Number of files = 6
 Number of dirs  = 2
 Max dir depth   = 1 (on source file system)
  Dir =: /DATA
+Database Version = 2
 guid = {{ guid }}
-Database Version = 1
 """)
 
 
@@ -70,7 +70,7 @@ class Test_Archive_File_DB(unittest.TestCase):
             "Failed to create catalogue.json.",
         )
         ar = load_archiver_from_json("catalogue.json")
-        self.assertEqual(get_info.render(size='1,333', guid = ar.guid),
+        self.assertEqual(get_info.render(size='1,480', guid = ar.guid),
                          ar.get_info().strip())
 
     def make_iso(self):
@@ -99,12 +99,12 @@ class Test_Archive_File_DB(unittest.TestCase):
         iso.close()
         file_data = extracted.getvalue().decode('utf-8')
         self.assertEqual(
-            '{\r\n    "date": "',
+            '{\r\n    "client_n',
             file_data[:16],
             "Failed to read from ISO",
         )
         ar = load_archiver_from_json(None, json_data=file_data)
-        self.assertEqual(get_info.render(size='1,332', guid = ar.guid),
+        self.assertEqual(get_info.render(size='1,479', guid = ar.guid),
                          ar.get_info().strip())
 
     def test_read_from_iso(self):
@@ -124,7 +124,7 @@ class Test_Archive_File_DB(unittest.TestCase):
                 new_drive_letter = list(drive_letters_after - drive_letters_before)[0]
                 print(f'New drive letter is {new_drive_letter}')
                 ar = load_archiver_from_json(f'{new_drive_letter}:\catalogue.json')
-                self.assertEqual(get_info.render(size='1,333', guid=ar.guid),
+                self.assertEqual(get_info.render(size='1,480', guid=ar.guid),
                                  ar.get_info().strip())
             finally:
                 os.system(f'PowerShell DisMount-DiskImage {iso_path}')

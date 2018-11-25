@@ -1,9 +1,8 @@
 {
     "client_name": "Unknown client",
-    "date": "2018-11-24T21:03:04.283127",
+    "date": "2018-11-25T11:25:14.021116",
     "files": {
         "0d3c937eee199c1d6b5af02f87ee9776ffb8538913bc28bdc44f294e8b405f02795e2cfdc6e52121cb6cb1a07c58883898bb820c01c510e005fa2be1481866a4": {
-            "disc_num": 0,
             "filenames": {
                 "/DATA/testDir/fourthé.txt": null
             },
@@ -11,7 +10,6 @@
             "size": 33
         },
         "390da1c000ce0c69257de9cda5255b4cd2a4a899415a017fc83be7a4d1670702054a9e1ca9e40ad15e20d403596f7c1feb001b4c1cfa459b06c7b0da4ffc583b": {
-            "disc_num": 0,
             "filenames": {
                 "/DATA/second copy copy.txt": null,
                 "/DATA/second copy.txt": null,
@@ -21,7 +19,6 @@
             "size": 24
         },
         "99f4486018bf930287842c52c1b7331e488a7848002d4426ff1a338587be85327edda57c60f15bd8f3ab6cc480a39690e498585d1f742162e4954784ec761319": {
-            "disc_num": 0,
             "filenames": {
                 "/DATA/first.html": null
             },
@@ -29,11 +26,11 @@
             "size": 22
         }
     },
-    "guid": "701d00e2-58e1-4c3d-9783-b83c9f6edc69",
+    "guid": "b219f14c-db7d-4a85-af6a-6ba7697e8662",
     "iso_path_root": "/DATA",
-    "job_id": "12d11d86-ffd9-497c-8e76-7a9b4e43737e",
+    "job_id": "fcc806dd-a94e-4876-a1f5-d82ef968ea72",
     "job_name": "Unamed job",
-    "segment_size": 737280000,
+    "segment_size": null,
     "source_path": "usb",
     "version": 2
 }

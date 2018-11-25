@@ -38,28 +38,6 @@ class HashDatabase(AbstractFileDatabase):
         except AttributeError:
             self.entries = HashFileEntries.create(self.iso_path_root, None)
 
-
-    def save_disc_info(self, catalogue_name=DISC_INFO_FILENAME):
-        """Save the current catalogue to file as a JSON file.
-        It should be possible to reread this file later and recreate this record and a complete archive."""
-        self.guid = uuid.uuid4()  # a second save will have a different guid as the structure is mutable and this
-        # ensures that each saved file is uniquely identifiable.
-        filename = Path(getcwd()) / catalogue_name
-        data = {
-            # Todo If use original path then need to create dynamically the path to match
-            #"OriginalPath": str(self.path),
-            "date": str(dt.datetime.utcnow().isoformat()),
-            "guid": str(self.guid),
-            "segment_size_str" : self.str_segment_size,
-            "segment_size_int" : self.int_segment_size,
-            "version": self.version,
-            "files": json.loads(self.entries.to_json()),
-            # List of directories are derived from file paths
-            # List of catalogues as GUID, the first will be this catalogue
-        }
-        with filename.open("w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, sort_keys=True, indent=4)
-
     def segment(self, size, catalogue_size):
         """
         For a catalogue will place each file onto a disc.
@@ -182,9 +160,5 @@ class HashDatabase(AbstractFileDatabase):
         result += f"Number of dirs  = {len(dirs)}\n"
         result += f"Max dir depth   = {max_dir_length} (on source file system)\n"
         result += f" Dir =: {longest_dir}\n"
-        if hasattr(self,'guid'):
-            result += (
-                f"guid = {self.guid}\n"
-            )
         result += f"Database Version = {self.version}\n"
         return result

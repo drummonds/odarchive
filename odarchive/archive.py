@@ -153,7 +153,7 @@ def load_archiver_from_json(filename=None, json_data=None):
         ar.hash_db.entries = HashFileEntries.create_from_json(ar.iso_path_root, d['files'], ar.hash_db)
         """Save the current catalogue to file as a JSON file.
         It should be possible to reread this file later and recreate this record."""
-        ar.hash_db.guid = uuid.UUID(d["guid"])
+        ar.guid = uuid.UUID(d["guid"])
         if int(d['version']) != ar.hash_db.version:
             raise odarchiveError(f"Version of Catalogue ({d['version']} " +
                                  " does not match that of software ({ar.version})." +
@@ -194,6 +194,7 @@ class Archiver:
         self.job_name = 'Unamed job'
         self.job_id = uuid.uuid4()  # The job_id should only be changed when reading a job from an old catalogue.
         self.version = DATABASE_VERSION
+        self.guid = None
 
 
     def save_as_dill(self, filename="archiver.dill"):
@@ -405,6 +406,11 @@ The same catalogue is written to each disc in the archive series."""
             result = self.hash_db.get_info()
         except:
             result = self.file_db.get_info()
+        # Add archive specific info
+        if hasattr(self,'guid'):
+            result += (
+                f"guid = {self.guid}\n"
+            )
         return result
 
     def print_files(self):

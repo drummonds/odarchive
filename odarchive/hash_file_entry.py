@@ -189,7 +189,7 @@ class HashFileEntry:
         self.catalogue_num = (
             catalogue_num
         )  # If None or 0 then in this catalogue otherwise in another catalogue
-        #  You will need to look up the catalogue number to the GUID of the cataloge at the start of the catalogue
+        #  You will need to look up the catalogue number to the GUID of the catalogue at the start of the catalogue
 
     @property
     def filename(self):

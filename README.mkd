@@ -143,7 +143,7 @@ There is a distinct order in which things must happen:
 ## Unique ID's
 
 There is a job_id which is created at the start of a job.  This should be unique and last the life
-time of the job.  There is also a guid with the catalogue, this changes every time it is changed and 
+time of the job.  There is also a guid with the catalogue, this changes every time it is saved/changed and 
 is like the version of the archive.
 
 ## Limitations

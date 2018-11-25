@@ -22,11 +22,8 @@ class Test_Simple(unittest.TestCase):
     def setUp(self):
         """Delete files on setup so that can review at end"""
         self.start_dir = os.getcwd()
+        os.chdir(Path(__file__).parents[0] / "test_1_files")
         test_1_clean()
-        if Path(self.start_dir).parts[-1] == "tests":
-            os.chdir("test_1_files")
-        else:  # Assume in parent directory
-            os.chdir("tests/test_1_files")
 
     def tearDown(self):
         os.chdir(self.start_dir)

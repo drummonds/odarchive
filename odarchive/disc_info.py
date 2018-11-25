@@ -34,6 +34,8 @@ def load_disc_info_from_json(filename=None, json_data=None):
     return di
 
 class DiscInfo:
+    """This is the information that should be stored on a per disc basis.  Most information
+    should be in the catalogue"""
     def __init__(self):
         self.disc_num = None  # Not yet defined
         self.num_discs = None
@@ -48,10 +50,10 @@ class DiscInfo:
         return result
 
     def get_json(self):
+        """Used in archive to save to a disc file"""
         data = {
             "date": str(dt.datetime.utcnow().isoformat()),
             "disc_num": str(self.disc_num),
             "num_discs": str(self.num_discs),
         }
         return json.dumps(data)
-

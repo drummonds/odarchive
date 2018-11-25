@@ -24,11 +24,8 @@ class Test_Direct(unittest.TestCase):
     def setUp(self):
         """Delete files on setup so that can review at end"""
         self.start_dir = os.getcwd()
+        os.chdir(Path(__file__).parents[0] / "test_1_files")
         test_1_clean()
-        if Path(self.start_dir).parts[-1] == "tests":
-            os.chdir("test_1_files")
-        else:  # Assume in parent directory
-            os.chdir("tests/test_1_files")
 
     def tearDown(self):
         os.chdir(self.start_dir)
@@ -42,8 +39,7 @@ class Test_Direct(unittest.TestCase):
         ar = Archiver()
         ar.create_file_database(Path("usb"))
         ar.convert_to_hash_database()
-        ar.save()  # Creates archiver.dill
-        ar.hash_db.save()  #  Creates catalogue.json
+        ar.save()  # Creates catalogue.json
         ar.file_db.print_files()
         ar.write_iso(True)
         self.assertFalse(
@@ -74,7 +70,8 @@ Number of files = 6
   Largest file  = 33
 Number of dirs  = 2
 Max dir depth   = 1 (on source file system)
- Dir =: /DATA"""
+ Dir =: /DATA
+Database Version = 2"""
         )
         GET_INFO_AFTER_SEGMENTATION = (
             """Number of entries = 3
@@ -89,12 +86,12 @@ Number of files = 6
 Number of dirs  = 2
 Max dir depth   = 1 (on source file system)
  Dir =: /DATA
-Database Version = 1"""
+Database Version = 2"""
         )
         ar = Archiver()
         ar.create_file_database(Path("usb"))
         ar.convert_to_hash_database()
-        ar.hash_db.save()  #  Creates catalogue.json
+        ar.save()  #  Creates catalogue.json
         ar.file_db.print_files()
         with self.assertRaises(odarchiveError):
             ar.write_iso(disc_num=0)
@@ -104,7 +101,6 @@ Database Version = 1"""
         )
         self.assertFalse(ar.is_segmented, "Archive should not be segmented")
         test_result = GET_INFO_BEFORE_SEGMENTATION + f'\nguid = {ar.guid}'
-        test_result = test_result + f'\nDatabase Version = 1'
         self.assertEqual(
             test_result,
             ar.get_info().strip(),
@@ -113,8 +109,9 @@ Database Version = 1"""
         ar.convert_to_hash_database()
         ar.segment("cd")
         self.assertTrue(ar.is_segmented, "Archive should be segmented")
+        test_result = GET_INFO_AFTER_SEGMENTATION + f'\nguid = {ar.guid}'
         self.assertEqual(
-            GET_INFO_AFTER_SEGMENTATION,
+            test_result,
             ar.get_info().strip(),
             "Testing get info after segmentation",
         )
@@ -139,10 +136,11 @@ Database Version = 1"""
 
 
     def test_archive_lock(self):
+        """Testing that the archive can be locked and then not further segmented."""
         ar = Archiver()
         ar.create_file_database(Path("usb"))
         ar.convert_to_hash_database()
-        ar.hash_db.save()  #  Creates catalogue.json
+        ar.save()  #  Creates catalogue.json
         ar.segment("cd")
         ar.segment("bd")  # before locking can resegment
         ar.locked = True
@@ -154,7 +152,7 @@ Database Version = 1"""
         ar = Archiver()
         ar.create_file_database(Path("usb"))
         ar.convert_to_hash_database()
-        ar.hash_db.save()  #  Creates catalogue.json
+        ar.save()  #  Creates catalogue.json
         ar.segment(506145)
         ar.locked = True
         self.assertEqual(2, ar.last_disc_num)
@@ -167,5 +165,5 @@ Database Version = 1"""
         self.assertIsNone(ar.guid, "At creation guid should be none")
         ar.create_file_database(Path("usb"))
         ar.convert_to_hash_database()
-        ar.hash_db.save()  #  Creates catalogue.json
-        self.assertIsNotNone(ar.guid, "After sving guid should exist")
+        ar.save()  #  Creates catalogue.json
+        self.assertIsNotNone(ar.guid, "After saving guid should exist")
